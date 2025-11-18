@@ -742,7 +742,7 @@ class DynamicReplicaDataset(StereoSequenceDataset):
         root="./data/datasets/dynamic_replica_data",
         split="train",
         sample_len=-1,
-        only_first_n_samples=-1,
+        only_first_n_samples=10,
     ):
         super(DynamicReplicaDataset, self).__init__(aug_params)
         self.root = root
@@ -763,6 +763,8 @@ class DynamicReplicaDataset(StereoSequenceDataset):
                 frame_annot
             )
         for seq_name in seq_annot.keys():
+            if seq_name != "f14caa-3_obj":
+                continue
             try:
                 filenames = defaultdict(lambda: defaultdict(list))
                 for cam in ["left", "right"]:
@@ -1508,7 +1510,7 @@ def fetch_dataloader(args):
 
     if add_dynamic_replica:
         dr_dataset = DynamicReplicaDataset(
-            aug_params, split="train", sample_len=args.sample_len
+            aug_params, split="valid", sample_len=args.sample_len
         )
         if new_dataset is None:
             new_dataset = dr_dataset
@@ -1548,14 +1550,14 @@ def fetch_dataloader(args):
         new_dataset if train_dataset is None else train_dataset + new_dataset
     )
 
-    train_loader = data.DataLoader(
-        train_dataset,
-        batch_size=args.batch_size,
-        pin_memory=True,
-        shuffle=True,
-        num_workers=args.num_workers,
-        drop_last=True,
-    )
+    # train_loader = data.DataLoader(
+    #     train_dataset,
+    #     batch_size=args.batch_size,
+    #     pin_memory=True,
+    #     shuffle=False,
+    #     num_workers=args.num_workers,
+    #     drop_last=True,
+    # )
 
     logging.info("Training with %d image pairs" % len(train_dataset))
-    return train_loader
+    return train_dataset
